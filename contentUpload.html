@@ -1,0 +1,269 @@
+<script  type="text/ng-template"  id="role_permission_renderer.html">
+<div class="grid-row">
+   <div class="column row-header" id="data.id">
+    {{ data.name }}
+   </div>
+   <div class="column">
+      <label class="permissionsBtn Switchbtn">
+         <label>
+            <input ng-checked="data.permissionMask != 'H'" ng-click = "data.permissionMask =  'H'" type="checkbox"/>
+            <span></span>
+         </label>
+      </label>
+      <label class="permissionsBtn view">
+         <label>
+            <input  ng-click = " (data.permissionMask ==  'H')? data.permissionMask =  'V' : data.permissionMask =  'H'; " ng-checked="data.permissionMask == 'V' || data.permissionMask == 'P' || data.permissionMask == 'D'" type="checkbox"/>
+            <span></span>
+         </label>
+      </label>
+      <label class="permissionsBtn print">
+         <label>
+            <input  ng-click = " (data.permissionMask == 'V' || data.permissionMask == 'H')? data.permissionMask =  'P' : data.permissionMask =  'V'; " ng-checked="data.permissionMask == 'P' || data.permissionMask == 'D'" type="checkbox"/>
+            <span></span>
+         </label>
+      </label>
+      <label class="permissionsBtn download">
+         <label>
+            <input ng-click = " (data.permissionMask !=  'D')? data.permissionMask =  'D' : data.permissionMask =  'P'; " ng-checked="data.permissionMask == 'D'" type="checkbox"/>
+            <span></span>
+         </label>
+      </label>
+   </div>
+</div>
+</script>
+<div class="formPopup uploadPopup"  id="{{ contentUpload.UploadId }}"  ng-controller="ContentUploadController as contentUpload">
+   <div class="PopupInner">
+      <div class="modal-header"  ng-if="!(contentUpload.Hidden)">
+         <button type="button" class="close" ng-click="$dismiss()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+         <button type="button" class="close minimizebtn" ng-click="contentUpload.HideUnhideUpload();" ng-if="(!contentUpload.Hidden) && contentUpload.Stage == 'progress'"></button>
+      </div>
+      <div class="modal-header"  ng-if="(contentUpload.Hidden)">
+         <button type="button" class="close pull-right" ng-click="contentUpload.HideUnhideUpload();"><span ng-if="contentUpload.Hidden"></span></button>
+         <h3 class="modal-title">{{ contentUpload.selectedNode.$nodeScope.$modelValue.name }}</h3>
+         <p ng-if="(contentUpload.Stage == 'before')">
+            {{'contentUpload_addfiles' | translate }}
+         </p>
+         <p ng-if="contentUpload.Stage == 'permissions'">
+          {{'contentUpload_reviewPermissions' | translate }}
+         </p>
+         <p ng-if="contentUpload.Stage == 'confirm'">
+            {{'contentUpload_confirmUpload' | translate }}
+         </p>
+         <p ng-if="contentUpload.Stage == 'summary'">
+              {{'contentUpload_uploadCompleted' | translate }}
+         </p>
+         <div ng-if="contentUpload.Stage == 'progress'" class="col-sm-12">
+            <div class="row">
+               <div class="col-sm-5">
+                  <p class="row">{{'contentUpload_uploadingDocuments' | translate}}</p>
+               </div>
+               <div class="col-sm-6">
+                  <div class="progressbar_outer">
+                     <uib-progressbar class="progress-striped active" max="contentUpload.filesArray.length" value="contentUpload.ItemsUploadedSuccessfully" type="info"></uib-progressbar>
+                     <span class="progressTxt">{{ (( contentUpload.ItemsUploadedSuccessfully /contentUpload.filesArray.length) * 100)  | number:0}} %
+                     </span>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <spinner name="browseSpinner" class="loader" show="contentUpload.ShowBrowseSpinner" > 
+            <div class="loadingSpinner">
+              <div class="spinnerInner">
+              <div class='uil-ring-css' style='transform:scale(0.27);'><div></div></div>
+              </div>
+            </div>
+        </spinner>
+      <div class="modal-body"  ng-if="!(contentUpload.Hidden)">
+         <h3 class="modal-title" ng-if="(contentUpload.Stage == 'before')"><i class="fa fa-cloud-upload"></i> Upload - <span class="graytext">{{'contentUpload_step1' | translate}}</span></h3>
+         <h3 class="modal-title" ng-if="contentUpload.Stage == 'permissions'"><i class="fa fa-cloud-upload"></i> Upload - <span class="graytext">{{'contentUpload_step2' | translate}}</span></h3>
+         <h3 class="modal-title" ng-if="contentUpload.Stage == 'confirm'"><i class="fa fa-cloud-upload"></i> Upload - <span class="graytext">{{'contentUpload_step3' | translate}}</span></h3>
+         <h3 class="modal-title" ng-if="contentUpload.Stage == 'progress'"><i class="fa fa-cloud-upload"> </i> Upload - <span class="graytext">{{'contentUpload_step4' | translate}}</span></h3>
+         <h3 class="modal-title" ng-if="contentUpload.Stage == 'summary'"><i class="fa fa-cloud-upload"> </i> {{'contentUpload_uploadComplete' | translate }}</h3>
+        <div class="uploadPopup-content">
+         <div ng-if="contentUpload.Stage == 'before'" class="uploadPopupInner">
+            <h4>Add Items</h4>
+            <p class="browser-message" ng-if="!contentUpload.isChrome"> {{'contentUpload_zipFolder' | translate }}  &nbsp;<u>{{'contentUpload_chrome' | translate}}</u></p>
+            <div class="{{contentUpload.dropClass}} upload_placeholder text-center" file-drop-events ng-class ="{'upload-minbox': contentUpload.filesArray.length !=0 }" id="{{ 'dropzone_' + contentUpload.UploadId }}">
+
+                  <input id="{{ 'file_' + contentUpload.UploadId }}" type="file" class ="" file-upload-events multiple style="display: none;">
+                  <button type="button" class="btn btn-info uploadFile"  ng-click="contentUpload.showUpload()">{{'contentUpload_browse' | translate}}</button>
+
+            </div>
+            <div class="uploadBoxStyle">
+              <div class="content-vertical-center">
+                     <i class="fa fa-plus"></i>
+                  <h4 class="row text-center">
+                    {{'contentUpload_dragAndDrop' | translate}}
+                  </h4>
+                  <h6>Drop Now</h6>
+                  <h5 class="row text-center">
+                  <span ng-if="contentUpload.filesArray.length == 0">
+                  <strong>  {{'contentUpload_maximumUpload' | translate:{ totalSize: (contentUpload.TotalUploadAllowed) } }} </strong>
+                  </span>
+                  <span ng-if="contentUpload.filesArray.length != 0">
+                     {{ (contentUpload.filesArray.length > 0 && ((contentUpload.TotalSpaceUsed*1024) | number:2) == 0.00) ? 0.01 :((contentUpload.TotalSpaceUsed) *1024 | number:2)}} MB added, {{ (contentUpload.TotalUploadAllowed - contentUpload.TotalSpaceUsed) *1024   | number:2}} MB remaining
+                  </span>
+                  </h5>
+               </div>
+            </div>
+            <div ng-if = 'contentUpload.filesArray.length !=0'>
+               <h4 class="grid-title"> {{'contentUpload_totalItems' | translate:{ filecount : contentUpload.filesArray.length }  }}
+                  <span class="notetext">{{ "contentUpload_compressedFolders" | translate:{ compressedCount:contentUpload.TotalZipFiles } }}  </span>
+               </h4>
+            <div ui-grid="contentUpload.BeforeGridOptions" ui-grid-cellNav ui-grid-auto-resize class="grid upload"  ng-if="contentUpload.Stage == 'before' && contentUpload.filesArray.length !=0"></div>
+            </div>
+         </div>
+         <div  ng-if="contentUpload.Stage == 'permissions'" class="uploadPopupInner">
+            <div class="PermissionsMsg">
+               <h4 class="grid-title">{{'contentUpload_reviewPermissions' | translate }}</h4>
+                <div class="col-md-9">
+                  <div class="row">
+               <p>{{'contentUpload_msg' | translate }}
+               </p>
+            </div>
+            </div>
+            </div>
+            <div class="PermissionsSetting col-md-12">
+     <div class="row">
+        <h6><span class="pull-left">{{'contentUpload_permissionSettings' | translate}}</span>
+           <button class="btn btn-primary btn-sm pull-right" ng-hide="contentUpload.isEdit" ng-click="contentUpload.isEdit = true">{{'edit' | translate}}</button>
+           <button class="btn btn-default btn-sm pull-right" ng-show="contentUpload.isEdit" ng-click="contentUpload.CancelPermissions();">{{'cancel' | translate}}</button>
+           <button class="btn btn-primary btn-sm pull-right" ng-show="contentUpload.isEdit" ng-click="contentUpload.SavePermissions();">{{'save' | translate}}</button>
+        </h6>
+     </div>
+        <div class="permissonGrid popupPermissionSetting">
+           <div class="grid-head" ng-class="{disabledSetting : ! contentUpload.isEdit}">
+              <div class="grid-row">
+                 <div class="column row-header">
+                 </div>
+                 <div class="column">
+                    <label class="permissionsBtn Switchbtn">
+                       <i class="fa fa-eye-slash"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-eye"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-print"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-cloud-download"></i>
+                    </label>
+                 </div>
+              </div>
+           </div>
+           <div class="grid-body">
+             <div ng-repeat="data in contentUpload.PermissionsList"  ng-class="{disabledSetting : ! contentUpload.isEdit}" ng-include="'role_permission_renderer.html'"></div>
+           </div>
+        </div>
+  </div>
+         </div>
+         <div  ng-if="contentUpload.Stage == 'confirm'" class="uploadPopupInner">
+            <h4>{{'contentUpload_confirm' | translate }}</h4>
+            <h6>{{'contentUpload_uploadItem' | translate }}<span class="countText"> {{ contentUpload.filesArray.length }}</span> </h6>
+            <div  ui-grid="contentUpload.ConfirmGridOptions" ui-grid-cellNav  ui-grid-auto-resize class="grid upload permissions" ng-if="contentUpload.Stage == 'confirm'"></div>
+
+                     <div class="PermissionsSetting col-md-12"   ng-if="contentUpload.PermissionsList.length !=0">
+     <div class="row">
+        <h6><span class="pull-left">{{'contentUpload_permissionSettings' | translate}}</span>
+        </h6>
+     </div>
+        <div class="permissonGrid popupPermissionSetting">
+           <div class="grid-head" ng-class="{disabledSetting : ! contentUpload.isEdit}">
+              <div class="grid-row">
+                 <div class="column row-header">
+                 </div>
+                 <div class="column">
+                    <label class="permissionsBtn Switchbtn">
+                       <i class="fa fa-eye-slash"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-eye"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-print"></i>
+                    </label>
+                    <label class="permissionsBtn">
+                       <i class="fa fa-cloud-download"></i>
+                    </label>
+                 </div>
+              </div>
+           </div>
+           <div class="grid-body">
+             <div ng-repeat="data in contentUpload.PermissionsList"  ng-class="{disabledSetting : ! contentUpload.isEdit}" ng-include="'role_permission_renderer.html'"></div>
+           </div>
+        </div>
+  </div>
+         </div>
+         <div ng-if="contentUpload.Stage == 'progress'" class="uploadPopupInner">
+            <div class="row">
+               <div  class="col-md-12">
+                  <h4>{{'contentUpload_uploading' | translate}}</h4>
+                  <div class="progressbar_outer">
+                     <uib-progressbar class="progress-striped active" max="(contentUpload.filesArray.length - contentUpload.FilesCancelled)" value="contentUpload.ItemsUploadedSuccessfully" type="default"></uib-progressbar>
+                     <p class="progressTxt">{{ ( (contentUpload.ItemsUploadedSuccessfully /(contentUpload.filesArray.length - contentUpload.FilesCancelled)) * 100)  | number:0}} %
+                     </p>
+                  </div>
+               </div>
+               <div class="col-md-12">
+                  <p class="progressStatus">{{ 'contentUpload_uploadingStats' | translate:{"itemsUploadedSuccessfully": contentUpload.ItemsUploadedSuccessfully , "filesCancelled": contentUpload.filesArray.length  - contentUpload.FilesCancelled   } }}</p>
+               </div>
+               <div class="col-md-12">
+                  <div ui-grid="contentUpload.ProgressGridOptions" ui-grid-cellNav ui-grid-auto-resize class="grid upload inprogress" ng-if="contentUpload.Stage == 'progress'"></div>
+               </div>
+            </div>
+         </div>
+         <div ng-if="contentUpload.Stage == 'summary'" class="uploadPopupInner">
+            <h6>
+                {{ 'contentUpload_uploadedsuccessfully' | translate:{ 'itemsUploadedSuccessfully':contentUpload.ItemsUploadedSuccessfully,"filesCancelled":contentUpload.filesArray.length - contentUpload.FilesCancelled  } }} </h6>
+            <p class="summery-error-msg" ng-if= "contentUpload.filesArray.length != contentUpload.ItemsUploadedSuccessfully">{{  contentUpload.filesArray.length - contentUpload.ItemsUploadedSuccessfully }} items not uploaded due to an error</p>
+            <div  ui-grid="contentUpload.SummaryGridOptions" ui-grid-cellNav ui-grid-auto-resize class="grid upload upload-summary" ng-if="contentUpload.Stage == 'summary' && (!contentUpload.Hidden)"></div>
+         </div>
+         </div>
+
+   </div>
+
+      <div class="modal-footer modal-ftr" ng-if="!(contentUpload.Hidden)">
+         <div  ng-if="contentUpload.Stage == 'before'">
+            <button type="button" class="btn " ng-class="contentUpload.filesArray.length !=0 ? 'btn-default':'btn-primary'" ng-click="contentUpload.CancelUpload();">{{'cancel' | translate}}</button>
+            <button type="button" class="btn btn-primary" ng-click="contentUpload.GoToPermissions(false)" ng-if="contentUpload.filesArray.length !=0">{{'continue' | translate}}</button>
+         </div>
+         <div  ng-if="contentUpload.Stage == 'permissions'">
+            <a class="pull-left btn" ng-disabled="contentUpload.isEdit"  ng-click="contentUpload.Stage = 'before';">{{'contentUpload_goBack' | translate }}</a>
+            <button type="button" class="btn btn-default" ng-disabled="contentUpload.isEdit" ng-click="contentUpload.CancelUpload();">{{'cancel' | translate }}</button>
+            <button type="button" class="btn btn-primary"  ng-disabled="contentUpload.isEdit" ng-click="contentUpload.GoToConfirm()">{{'continue' | translate }}</button>
+         </div>
+         <div  ng-if="contentUpload.Stage == 'confirm'">
+            <a class="pull-left btn" ng-click="contentUpload.GoToPermissions(true);">{{'contentUpload_goBack' | translate }}</a>
+            <button type="button" class="btn btn-default" ng-click="contentUpload.CancelUpload();">{{'cancel' | translate }}</button>
+            <button type="button" class="btn btn-primary" ng-click="contentUpload.GoToProgress()">{{'upload' | translate }}</button>
+         </div>
+         <div  ng-if="contentUpload.Stage == 'progress'">
+            <button type="button" class="btn btn-default" ng-click="contentUpload.CancelUpload();">{{'contentUpload_cancel' | translate}}</button>
+            <button type="button" class="btn btn-primary" ng-click="contentUpload.HideUnhideUpload();">{{'hide' | translate}}</button>
+         </div>
+         <div ng-if="contentUpload.Stage == 'summary'">
+            <button type="button" class="btn btn-primary" ng-click="$close(true); contentUpload.UploadFinished();">{{'finish' | translate}}</button>
+         </div>
+      </div>
+</div>
+</div>
+<script type="text/ng-template" id="CancelUpload.html">
+   <div class="confirmPopup">
+     <div class="PopupInner">
+   <div class="modal-header">
+         <button type="button" class="close" ng-click="$dismiss()" aria-label="Close"><span aria-hidden="true">&times;</span>
+         </button>
+       </div>
+   <div class="modal-body confirmationMsg">
+       <h6 class="text-center">
+           {{'contentUpload_warning' | translate}}
+     </div>
+   <div class="modal-footer text-center">
+         <button type="button" class="btn btn-primary" ng-click="cancelConfirm.CallCancelUpload()">{{'yes' | translate}}</button>
+         <button type="button" class="btn btn-default" ng-click="$dismiss()">{{'no' | translate}}</button>
+        </div>
+  </div>
+</div>
+</script>
